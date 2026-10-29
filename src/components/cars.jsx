@@ -1,5 +1,6 @@
-import React, { useEffect } from 'react';
+import { useEffect } from 'react';
 import { useGLTF } from '@react-three/drei';
+import { CAR_MODELS } from './carPresets';
 
 // Body paint materials (body + stripe) — gets recolored
 const BODY_MATERIAL_NAMES = ['z28MI_Exhaust1', 'z28MI_1080040001_002'];
@@ -15,13 +16,9 @@ const WHEEL_PAINT = {
 const RIM_MATERIAL = 'z28MI_ChangeA_Rim1';
 const BRAKE_MATERIAL = 'z28MI_ChangeA_Brake1';
 
-export const CarModel = ({ color = '#3b82f6', wheelColor = 'default', position = [0, 0, 0] }) => {
-  let gltf;
-  try {
-    gltf = useGLTF('/model/car.glb');
-  } catch (e) {
-    console.warn("Model not found, using fallback.");
-  }
+export const CarModel = ({ color = '#3b82f6', wheelColor = 'default', modelId = 'street-gt', position = [0, 0, 0] }) => {
+  const gltf = useGLTF('/model/car.glb');
+  const model = CAR_MODELS.find((item) => item.id === modelId) || CAR_MODELS[0];
 
   useEffect(() => {
     if (!gltf) return;
@@ -31,7 +28,7 @@ export const CarModel = ({ color = '#3b82f6', wheelColor = 'default', position =
 
         // Body paint (body + stripe)
         if (BODY_MATERIAL_NAMES.includes(matName)) {
-          child.material.color.set(color);
+          child.material.color.set(matName === BODY_MATERIAL_NAMES[0] ? color : model.accent);
         }
 
         // Wheel finish
@@ -45,25 +42,20 @@ export const CarModel = ({ color = '#3b82f6', wheelColor = 'default', position =
         }
       }
     });
-  }, [gltf, color, wheelColor]);
+  }, [gltf, color, wheelColor, model]);
 
   if (gltf) {
     return (
       <primitive 
         object={gltf.scene} 
         position={position} 
-        scale={50}
+        rotation={model.rotation}
+        scale={model.scale}
       />
     );
   }
 
-  // Fallback if model fails to load
-  return (
-    <mesh position={[0, 0.5, 0]}>
-      <boxGeometry args={[1, 0.5, 2]} />
-      <meshStandardMaterial color={color} />
-    </mesh>
-  );
+  return null;
 };
 
 useGLTF.preload('/model/car.glb');

@@ -1,0 +1,38 @@
+export const CAR_MODELS = [
+  {
+    id: 'street-gt',
+    name: 'Street GT',
+    type: 'Performance coupe',
+    description: 'Balanced power and sharp road presence.',
+    scale: 50,
+    rotation: [0, 0, 0],
+    accent: '#111827',
+  },
+  {
+    id: 'midnight-rs',
+    name: 'Midnight RS',
+    type: 'Track coupe',
+    description: 'Lower, darker, and built for late-night runs.',
+    scale: 51.5,
+    rotation: [0, -0.08, 0],
+    accent: '#0f172a',
+  },
+  {
+    id: 'sunset-rally',
+    name: 'Sunset Rally',
+    type: 'Rally sport',
+    description: 'A confident stance with a bright competition stripe.',
+    scale: 49,
+    rotation: [0, 0.08, 0],
+    accent: '#f8fafc',
+  },
+  {
+    id: 'chrome-classic',
+    name: 'Chrome Classic',
+    type: 'Retro cruiser',
+    description: 'Old-school character with a polished finish.',
+    scale: 48.5,
+    rotation: [0, 0, 0],
+    accent: '#cbd5e1',
+  },
+];

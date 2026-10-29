@@ -1,7 +1,8 @@
-import React, { useState, Suspense } from 'react';
+import { useState, Suspense } from 'react';
 import { Canvas } from '@react-three/fiber';
-import { OrbitControls, Grid, TransformControls, Html } from '@react-three/drei';
+import { OrbitControls, TransformControls, Html } from '@react-three/drei';
 import { CarModel } from './cars';
+import { CAR_MODELS } from './carPresets';
 
 const COLORS = [
   { hex: '#3b82f6', name: 'Blue' },
@@ -22,7 +23,7 @@ const WHEEL_COLORS = [
 ];
 
 // ______________________ GARAGE SCENE (tight, no void peek) ______________________
-function GarageScene({ carColor, wheelColor }) {
+function GarageScene({ carColor, wheelColor, model }) {
   const colorName = COLORS.find(c => c.hex === carColor)?.name || 'Custom';
   const wheelName = WHEEL_COLORS.find(w => w.id === wheelColor)?.name || 'Default';
   const wheelHex = WHEEL_COLORS.find(w => w.id === wheelColor)?.hex || '#cbd5e1';
@@ -111,6 +112,7 @@ function GarageScene({ carColor, wheelColor }) {
             whiteSpace: 'nowrap'
           }}>
             <div>PAINT: <span style={{ color: carColor, fontWeight: '900' }}>{colorName}</span></div>
+            <div style={{ marginTop: '2px' }}>MODEL: <span style={{ color: '#ff8060', fontWeight: '900' }}>{model.name}</span></div>
             <div style={{ marginTop: '2px' }}>
               WHEELS: <span style={{ color: wheelHex, fontWeight: '900' }}>{wheelName}</span>
             </div>
@@ -136,7 +138,9 @@ const Garage = ({ onBack }) => {
   const [wheelColor, setWheelColor] = useState('default');
   const [showPalette, setShowPalette] = useState(false);
   const [showWheels, setShowWheels] = useState(false);
+  const [modelId, setModelId] = useState('street-gt');
   const MAX_LIGHTS = 3;
+  const selectedModel = CAR_MODELS.find((model) => model.id === modelId) || CAR_MODELS[0];
 
   const addSpotlight = () => {
     if (lights.length < MAX_LIGHTS) {
@@ -152,8 +156,8 @@ const Garage = ({ onBack }) => {
 
       <Canvas shadows camera={{ position: [3, 2.5, 4], fov: 45 }} dpr={[1, 1.5]} frameloop="demand">
         <Suspense fallback={null}>
-          <GarageScene carColor={carColor} wheelColor={wheelColor} />
-          <CarModel color={carColor} wheelColor={wheelColor} />
+          <GarageScene carColor={carColor} wheelColor={wheelColor} model={selectedModel} />
+          <CarModel color={carColor} wheelColor={wheelColor} modelId={modelId} />
         </Suspense>
 
         {lights.map((light) => (
@@ -174,6 +178,36 @@ const Garage = ({ onBack }) => {
           maxDistance={5.6}
         />
       </Canvas>
+
+      <div style={modelPickerStyle}>
+        <div style={modelPickerHeader}>
+          <div>
+            <div style={modelPickerEyebrow}>Choose your ride</div>
+            <strong>{selectedModel.name}</strong>
+          </div>
+          <span style={modelCountStyle}>{CAR_MODELS.length} MODELS</span>
+        </div>
+        <div style={modelGridStyle}>
+          {CAR_MODELS.map((model) => (
+            <button
+              key={model.id}
+              onClick={() => setModelId(model.id)}
+              style={{
+                ...modelButtonStyle,
+                borderColor: modelId === model.id ? '#ff8060' : 'rgba(255,255,255,0.12)',
+                backgroundColor: modelId === model.id ? 'rgba(255,128,96,0.16)' : 'rgba(0,0,0,0.25)',
+              }}
+            >
+              <span style={{ ...modelSwatchStyle, backgroundColor: model.accent }} />
+              <span style={{ minWidth: 0 }}>
+                <b style={{ display: 'block', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{model.name}</b>
+                <small style={{ display: 'block', marginTop: '3px', color: '#9ca3af', fontSize: '0.65rem' }}>{model.type}</small>
+              </span>
+            </button>
+          ))}
+        </div>
+        <p style={modelDescriptionStyle}>{selectedModel.description}</p>
+      </div>
 
       <div style={bottomActionBarStyle}>
         <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'center', gap: '10px', padding: '14px 20px' }}>
@@ -313,6 +347,80 @@ const bottomActionBarStyle = {
   position: 'absolute', bottom: 0, left: 0, right: 0, zIndex: 20,
   backgroundColor: 'rgba(17, 24, 39, 0.95)', borderTop: '1px solid #374151',
   boxShadow: '0 -8px 24px rgba(0, 0, 0, 0.35)'
+};
+
+const modelPickerStyle = {
+  position: 'absolute',
+  top: '20px',
+  right: '20px',
+  zIndex: 20,
+  width: 'min(390px, calc(100vw - 40px))',
+  padding: '16px',
+  color: '#fff',
+  border: '1px solid rgba(255,255,255,0.14)',
+  borderRadius: '16px',
+  backgroundColor: 'rgba(10, 12, 18, 0.84)',
+  backdropFilter: 'blur(14px)',
+  boxShadow: '0 12px 35px rgba(0,0,0,0.35)',
+  fontFamily: '"Bangers", "Trebuchet MS", "Comic Sans MS", cursive, sans-serif',
+};
+
+const modelPickerHeader = {
+  display: 'flex',
+  alignItems: 'flex-start',
+  justifyContent: 'space-between',
+  gap: '12px',
+  marginBottom: '12px',
+};
+
+const modelPickerEyebrow = {
+  marginBottom: '4px',
+  color: '#ff8060',
+  fontSize: '0.68rem',
+  letterSpacing: '0.12em',
+  textTransform: 'uppercase',
+};
+
+const modelCountStyle = {
+  color: '#9ca3af',
+  fontSize: '0.68rem',
+  letterSpacing: '0.08em',
+};
+
+const modelGridStyle = {
+  display: 'grid',
+  gridTemplateColumns: 'repeat(2, minmax(0, 1fr))',
+  gap: '8px',
+};
+
+const modelButtonStyle = {
+  minWidth: 0,
+  padding: '10px',
+  display: 'flex',
+  alignItems: 'center',
+  gap: '9px',
+  color: '#fff',
+  border: '1px solid',
+  borderRadius: '10px',
+  cursor: 'pointer',
+  textAlign: 'left',
+  fontFamily: 'inherit',
+};
+
+const modelSwatchStyle = {
+  width: '20px',
+  height: '20px',
+  flex: '0 0 auto',
+  border: '2px solid rgba(255,255,255,0.7)',
+  borderRadius: '50%',
+  boxShadow: '0 0 10px rgba(255,255,255,0.15)',
+};
+
+const modelDescriptionStyle = {
+  margin: '12px 0 0',
+  color: '#aeb4c2',
+  fontFamily: 'sans-serif',
+  fontSize: '0.72rem',
 };
 
 const buttonStyle = {
